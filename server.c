@@ -15,7 +15,7 @@ int main(void)
     WSADATA wsa;
     sockdata sockData;
     int port = 8888;
-    int c;
+    int c    = sizeof(struct sockaddr_in);
 
     printf("\nInitialising Winsock...");
 
@@ -55,6 +55,7 @@ int main(void)
         sockData.client = accept(sockData.server, (struct sockaddr*)&sockData.sockaddr_client, &c);
         printf("Accepted a request...\n");
         HANDLE thread = CreateThread(NULL, 0, handleServerRequest, (void*)&sockData, 0, NULL);
+        
         if (thread)
         {
             printf("Passing job to thread...\n");
@@ -68,11 +69,8 @@ int main(void)
 
 DWORD WINAPI handleServerRequest(void* data)
 {
-
-    int c = sizeof(struct sockaddr_in);
-
     sockdata sockData             = *(sockdata*)data;
-    const char* messageToSendBack = "<div>Hello World</div>";
+    const char* messageToSendBack = "Hello! This is the server!";
 
     if (sockData.client == INVALID_SOCKET)
     {
@@ -86,6 +84,7 @@ DWORD WINAPI handleServerRequest(void* data)
         printf("Crashed at send");
         exit(1);
     }
+
     printf("Finished sending back data to client\n");
     return 0;
 }

@@ -38,12 +38,10 @@ int main(void)
     /* Establish the connection to the echo server */
     if (connect(sock, (struct sockaddr*)&echoServAddr, sizeof(echoServAddr)) < 0)
     {
-        printf("Crashed at connect");
+        printf("Crashed at connect\n");
         exit(1);
     }
-    message    = "GET / HTTP/1.1\r\n\r\n";
-    messageLen = strlen(message); /* Determine input length */
-
+    
     /* Send the string, including the null terminator, to the server */
     if (send(sock, message, messageLen, 0) != messageLen)
     {
