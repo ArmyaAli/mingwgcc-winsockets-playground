@@ -10,7 +10,7 @@ server:
 	$(CC) server.c -o output/server.exe -O1 $(C_STANDARD) $(COMPILER_WARNINGS) $(INCLUDES) $(LINKER_FLAGS) 
 run_client: client
 	./output/client.exe
-runs_server: server
+run_server: server
 	./output/server.exe
 clean:
 	rm -rf output/*.exe output/*.o *.exe *.o
