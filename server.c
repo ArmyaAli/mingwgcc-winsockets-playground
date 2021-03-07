@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 
 typedef struct socketData
 {
@@ -52,10 +52,13 @@ int main(void)
     {
         printf("Listening for requests...\n");
         listen(sockData.server, 3);
+
         sockData.client = accept(sockData.server, (struct sockaddr*)&sockData.sockaddr_client, &c);
+
         printf("Accepted a request...\n");
+
         HANDLE thread = CreateThread(NULL, 0, handleServerRequest, (void*)&sockData, 0, NULL);
-        
+
         if (thread)
         {
             printf("Passing job to thread...\n");
