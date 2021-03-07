@@ -1,32 +1,20 @@
-/* CHANGES FROM UNIX VERSION                                                   */
-/*                                                                             */
-/* 1.  Changed header files.                                                   */
-/* 2.  Added WSAStartUP() and WSACleanUp().                                    */
-/* 3.  Used closesocket() instead of close().                                  */
-
-#include <stdio.h>   /* for printf(), fprintf() */
-#include <stdlib.h>  /* for exit() */
-#include <winsock.h> /* for socket(),... */
-
-#define RCVBUFSIZE 32 /* Size of receive buffer */
-
-void DieWithError(char* errorMessage); /* Error handling function */
+#include <stdio.h>
+#include <stdlib.h>
+#include <winsock.h>
 
 int main(void)
 {
-    int sock;                        /* Socket descriptor */
+    int sock; /* Socket descriptor */
+    int recv_size; // size of reciving buffer
     struct sockaddr_in echoServAddr; /* Echo server address */
-    unsigned short echoServPort;     /* Echo server port */
+    unsigned short serverPort;     // server port
     char* servIP;                    /* Server IP address (dotted quad) */
-    char* echoString;                /* String to send to echo server */
-    char echoBuffer[RCVBUFSIZE];     /* Buffer for echo string */
-    int echoStringLen;               /* Length of string to echo */
-    int bytesRcvd, totalBytesRcvd;   /* Bytes read in single recv() and total bytes read */
+    int messageLen;                  /* Length of string to echo */
     WSADATA wsaData;                 /* Structure for WinSock setup communication */
-
-    servIP       = "172.217.1.174"; /* First arg: server IP address (dotted quad) */
-    echoString   = "Hello World";   /* Second arg: string to echo */
-    echoServPort = atoi("80");      /* Use given port, if any */
+    char server_reply[2000];
+    char* message;
+    servIP       = "127.0.0.1"; /* First arg: server IP address (dotted quad) */
+    serverPort = 8888;      /* Use given port, if any */
 
     if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) /* Load Winsock 2.0 DLL */
     {
@@ -36,48 +24,46 @@ int main(void)
 
     /* Create a reliable, stream socket using TCP */
     if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
-        DieWithError("socket() failed");
+    {
+        printf("Crashed at socket created");
+    }
 
     /* Construct the server address structure */
-    memset(&echoServAddr, 0, sizeof(echoServAddr));     /* Zero out structure */
+    memset(&echoServAddr, 0, sizeof(echoServAddr)); /* Zero out structure */
+
     echoServAddr.sin_family      = AF_INET;             /* Internet address family */
     echoServAddr.sin_addr.s_addr = inet_addr(servIP);   /* Server IP address */
-    echoServAddr.sin_port        = htons(echoServPort); /* Server port */
+    echoServAddr.sin_port        = htons(serverPort); /* Server port */
 
     /* Establish the connection to the echo server */
     if (connect(sock, (struct sockaddr*)&echoServAddr, sizeof(echoServAddr)) < 0)
-        DieWithError("connect() failed");
-
-    echoStringLen = strlen(echoString); /* Determine input length */
+    {
+        printf("Crashed at connect");
+        exit(1);
+    }
+    message    = "GET / HTTP/1.1\r\n\r\n";
+    messageLen = strlen(message); /* Determine input length */
 
     /* Send the string, including the null terminator, to the server */
-    if (send(sock, echoString, echoStringLen, 0) != echoStringLen)
-        DieWithError("send() sent a different number of bytes than expected");
-
-    /* Receive the same string back from the server */
-    totalBytesRcvd = 0;
-    printf("Received: "); /* Setup to print the echoed string */
-    while (totalBytesRcvd < echoStringLen)
+    if (send(sock, message, messageLen, 0) != messageLen)
     {
-        /* Receive up to the buffer size (minus 1 to leave space for
-           a null terminator) bytes from the sender */
-        if ((bytesRcvd = recv(sock, echoBuffer, RCVBUFSIZE - 1, 0)) <= 0)
-            DieWithError("recv() failed or connection closed prematurely");
-        totalBytesRcvd += bytesRcvd;  /* Keep tally of total bytes */
-        echoBuffer[bytesRcvd] = '\0'; /* Add \0 so printf knows where to stop */
-        printf("%s", echoBuffer);     /* Print the echo buffer */
+        printf("Crashed at send");
+        exit(1);
     }
 
-    printf("\n"); /* Print a final linefeed */
+    // Receive a reply from the server
+    if ((recv_size = recv(sock, server_reply, 2000, 0)) == SOCKET_ERROR)
+    {
+        puts("recv failed");
+    }
 
+    puts("Reply received\n");
+
+    // Add a NULL terminating character to make it a proper string before printing
+    server_reply[recv_size] = '\0';
+    puts(server_reply);
     closesocket(sock);
     WSACleanup(); /* Cleanup Winsock */
 
     return 0;
-}
-
-void DieWithError(char* errorMessage)
-{
-    fprintf(stderr, "%s: %d\n", errorMessage, WSAGetLastError());
-    exit(1);
 }
