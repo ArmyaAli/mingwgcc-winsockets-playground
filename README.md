@@ -5,3 +5,4 @@ The purpose of this repo is to eventually learn to turn it into a game server fo
 A python script is also included to hit the server with a high load instantly
 
 
+![demo of me running server and client and hitting it with a lot of requests](serverclientdemo.gif)
