@@ -12,5 +12,7 @@ AlignConsecutiveMacros: true
 AlignOperands: true
 AlignTrailingComments: true
 AllowShortBlocksOnASingleLine: Empty
+SortIncludes: false
+
 ---
 
