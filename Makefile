@@ -12,5 +12,7 @@ run_client: client
 	./output/client.exe
 run_server: server
 	./output/server.exe
+run_client_dont_build:
+	./output/client.exe
 clean:
 	rm -rf output/*.exe output/*.o *.exe *.o
